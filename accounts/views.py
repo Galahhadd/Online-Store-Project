@@ -1,9 +1,52 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import get_user_model, login, authenticate, logout
+from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 
+from rest_framework import generics
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny, IsAuthenticated
+
 from .forms import CustomUserCreationForm, CustomLoginForm
+from .serializers import (
+	RegisterUserSerializer,
+	CustomUserSerializer,
+	ChangePasswordSerializer,
+	UpdateProfileSerializer,
+	)
+from .models import CustomUser
+
+
+
+class RegisterApiView(generics.CreateAPIView):
+    queryset = CustomUser.objects.all()
+    permission_classes = (AllowAny,)
+    serializer_class = RegisterUserSerializer
+
+
+class GetCurrentUserView(APIView):
+	permission_classes = (IsAuthenticated,)
+
+	def get(self, request):
+		user = request.user
+		serializer = CustomUserSerializer(user)
+		return Response(serializer.data)
+
+
+class ChangePasswordView(generics.UpdateAPIView):
+	queryset = CustomUser.objects.all()
+	permission_classes = (IsAuthenticated,)
+	serializer_class = ChangePasswordSerializer
+
+
+class UpdateProfileView(generics.UpdateAPIView):
+    queryset = CustomUser.objects.all()
+    permission_classes = (IsAuthenticated,)
+    serializer_class = UpdateProfileSerializer
+
+
+
 
 
 def register_view(request):
@@ -15,7 +58,7 @@ def register_view(request):
 		form = CustomUserCreationForm(request.POST)
 		if form.is_valid():
 			user = form.save(commit=False)
-			user.is_active = False
+			user.is_active = True
 			user.save()
 			return (redirect('store:home'))
 
@@ -38,6 +81,7 @@ def login_view(request):
 
 	if request.method == "POST":
 		form = CustomLoginForm(request.POST)
+		print(request.POST)
 		if form.is_valid():
 			email = form.cleaned_data['email']
 			password = form.cleaned_data['password']
