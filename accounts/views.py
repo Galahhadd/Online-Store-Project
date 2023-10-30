@@ -39,11 +39,17 @@ class ChangePasswordView(generics.UpdateAPIView):
 	permission_classes = (IsAuthenticated,)
 	serializer_class = ChangePasswordSerializer
 
+	def get_object(self):
+		return CustomUser.objects.get(pk=self.request.user.id)
+
 
 class UpdateProfileView(generics.UpdateAPIView):
     queryset = CustomUser.objects.all()
     permission_classes = (IsAuthenticated,)
     serializer_class = UpdateProfileSerializer
+
+    def get_object(self):
+    	return CustomUser.objects.get(pk=self.request.user.id)
 
 
 

@@ -76,7 +76,7 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
 		return instance
 
 class UpdateProfileSerializer(serializers.ModelSerializer):
-	emial = serializers.EmailField(required=True)
+	email = serializers.EmailField(required=True)
 
 	class Meta:
 		model = CustomUser
@@ -95,10 +95,6 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
 		return value
 
 	def update(self, instance, validated_data):
-		user = self.context['request'].user
-
-		if user.pk != instance.pk:
-			raise serializers.ValidationError({"authorize": "You dont have permission for this user."})
 
 		instance.first_name = validated_data['first_name']
 		instance.last_name = validated_data['last_name']
