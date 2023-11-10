@@ -4,10 +4,10 @@ from django.utils.text import slugify
 
 
 class ProductModel(models.Model):
-	name = models.CharField(max_length=40)
-	slug = models.SlugField(blank=True)
+	name = models.CharField(max_length=255)
+	slug = models.SlugField(unique=True, blank=True, max_length=255)
 	price = models.FloatField()
-	manufacturer = models.CharField(max_length=40)
+	manufacturer = models.CharField(max_length=255)
 	guarantee = models.IntegerField()
 	info = models.JSONField()
 
