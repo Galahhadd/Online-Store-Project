@@ -10,18 +10,11 @@ from .views import (
 	ChangePasswordView,
 	UpdateProfileView,
 	LogoutView,
-	register_view,
-	login_view,
-	logout_view,
 	)
 
 app_name = 'accounts'
 
 urlpatterns = [
-	path('register_old/', register_view, name = 'register'),
-	path('login_old/', login_view, name='login'),
-	path('logout_old/', logout_view, name='logout'),
-
 	path('login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('login/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('register/', RegisterApiView.as_view(), name = 'api_register'),
