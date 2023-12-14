@@ -82,6 +82,24 @@ def EndPointsView(request):
 					"methods":"GET",
 					"info":"Shows profile of current logged in user",
 					"requires":"access token"
+						},
+		"API get all products" : {
+					"endpoint":"products/",
+					"methods":"GET",
+					"info":"Shows all products",
+						},	
+		"API get specific product by slug" : {
+					"endpoint":"products/<slug>",
+					"methods":"GET",
+					"info":"Shows specific product by its slug",
+					"example":"/products/intel-core-i7-10700k"
+						},	
+		"API filter products" : {
+					"endpoint":"products/filter/",
+					"methods":"GET",
+					"info":"Filter prodctucts by given filter values",
+					"example":"/products/filter/?manufacturer=AMD",
+					"example_2":"/products/filter/?min_price=390&info=type:CPU;core:Zen%203"
 						},										
 	}
 	return Response(endpoints)

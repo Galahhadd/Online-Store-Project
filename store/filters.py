@@ -12,13 +12,16 @@ class GeneralProductFilter(filters.FilterSet):
 
     def filter_few_values(self, queryset, name, value):
         few_values = value.split(',')
-        print(few_values)
         return queryset.filter(**({f'{name}__in':few_values}))
 
 
     def filter_json_field(self, queryset, name, value):
+
+        print(value)
         
         filters = [pair.split(':') for pair in value.split(';')]
+
+        print(filters)
         
 
         json_filters = {}
@@ -29,11 +32,20 @@ class GeneralProductFilter(filters.FilterSet):
             else:
                 json_filters[key] = [val]
 
+        print(json_filters)
+
         qs = queryset
 
         for key, val in json_filters.items():
+            for value in val:
+                if value.lower() == "true" or value.lower() == "false":
+                    qs = qs.filter(**{f'info__{key}': value.lower() == "true"})
+                elif '[' in value:
+                    qs = qs.filter(**{f'info__{key}__contains': value[1:-1].split(',')})
+                else:
+                    qs = qs.filter(**({f'info__{key}__in':val[0].split(',')}))
             
-            qs = qs.filter(**({f'info__{key}__in':val[0].split(',')}))
+            #qs = qs.filter(**({f'info__{key}__in':val[0].split(',')}))
 
         return qs
 
