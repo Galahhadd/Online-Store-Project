@@ -8,6 +8,7 @@ class CustomUser(AbstractUser):
 	username = None 
 	email = models.EmailField(unique=True, max_length=255)
 	phone_number = models.CharField(unique=True, max_length=20, validators=[RegexValidator])
+	image = models.ImageField(upload_to='images/', blank = True, null = True)
 
 	objects = CustomUserManager()
 

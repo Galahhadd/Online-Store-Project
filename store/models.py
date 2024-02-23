@@ -12,6 +12,8 @@ class ProductModel(models.Model):
 	guarantee = models.IntegerField()
 	info = models.JSONField()
 
+	favourite = models.ManyToManyField(get_user_model(), blank=True)
+
 	def __str__(self):
 		return self.name
 
@@ -20,40 +22,32 @@ class ProductModel(models.Model):
 		super(ProductModel, self).save(*args, **kwargs)
 
 
-class Customer(models.Model):
-	user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
-	address = models.ForeignKey('ShippingAdressModel', on_delete=models.CASCADE, blank=True,null=True)
-	
+class CommentModel(models.Model):
+	text = models.TextField()
+	user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+	product = models.ForeignKey('ProductModel', on_delete=models.CASCADE)
 
 	def __str__(self):
-		return "Покупатель: {} {}".format(self.user.first_name, self.user.last_name)
-
-
-class CartItemModel(models.Model):
-	customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, blank=True,null=True)
-	product = models.ForeignKey(ProductModel, on_delete=models.SET_NULL, blank=True,null=True)
-	quantity = models.IntegerField(default=0, null=True, blank=True)
-	date_added= models.DateTimeField(auto_now_add=True)
-
-	def __str__(self):
-		return self.product.name
-
-class CartModel(models.Model):
-	customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, blank=True,null=True)
-	products = models.ManyToManyField(CartItemModel, blank=True)
-	date_ordered = models.DateTimeField(auto_now_add=True)
-	complete = models.BooleanField(default=False, blank=False, null=True)
-	transaction_id = models.CharField(max_length=200, null=True)
-
-	def __str__(self):
-		return str(self.id)
-
+		return self.text
 
 class ShippingAdressModel(models.Model):
-	address = models.CharField(max_length=200, null=True)
+	address = models.CharField(max_length=1024, null=True)
 	city = models.CharField(max_length=200, null=True)
 	zipcode = models.CharField(max_length=200, null=True)
 	date_added= models.DateTimeField(auto_now_add=True)
 
 	def __str__(self):
 		return self.address
+
+class OrderModel(models.Model):
+	products_ids = models.JSONField()
+	first_name = models.CharField(max_length=255)
+	last_name = models.CharField(max_length=255)
+	phone = models.CharField(max_length=20)
+	email = models.EmailField(max_length=255)
+	final_sum = models.FloatField(default=0)
+	address = models.ForeignKey(ShippingAdressModel, on_delete=models.SET_NULL, blank=True, null=True)
+	products = models.ManyToManyField(ProductModel)
+	date_created= models.DateTimeField(auto_now_add=True)
+
+

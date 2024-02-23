@@ -1,18 +1,26 @@
 from django.views.generic import TemplateView
-from django.db.models import Q
+from django.db.models import Q, F
+
 
 from rest_framework import generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from django_filters import rest_framework as filters
+from rest_framework import status
 
-from .models import ProductModel, CartItemModel, CartModel
-from .serializers import ProductModelSerializer, CartItemSerializer, CartSerializer
+from .models import ProductModel, OrderModel, CommentModel
+from .serializers import (ProductModelSerializer, 	
+							OrderSerializerAnonim, 
+							AdressSerailizer, 
+							ShippingAdressModel, 
+							OneProductSerializer, 
+							CommentCreateUpdateSerializer,
+							FavouriteProductSerializer,)
+
 from .filters import AllWillBeOneFilter
 
-class HomePageView(TemplateView):
-	template_name = "home.html"
 
 @api_view(['GET'])
 def EndPointsView(request):
@@ -82,41 +90,32 @@ def EndPointsView(request):
 					"methods":"GET",
 					"info":"Shows profile of current logged in user",
 					"requires":"access token"
-						},
-		"API get all products" : {
-					"endpoint":"products/",
-					"methods":"GET",
-					"info":"Shows all products",
-						},	
-		"API get specific product by slug" : {
-					"endpoint":"products/<slug>",
-					"methods":"GET",
-					"info":"Shows specific product by its slug",
-					"example":"/products/intel-core-i7-10700k"
-						},	
-		"API filter products" : {
-					"endpoint":"products/filter/",
-					"methods":"GET",
-					"info":"Filter prodctucts by given filter values",
-					"example":"/products/filter/?manufacturer=AMD",
-					"example_2":"/products/filter/?min_price=390&info=type:CPU;core:Zen%203"
-						},										
+						},									
 	}
 	return Response(endpoints)
 
 
 class GetProducstApiView(generics.ListAPIView):
+
+	"""List all products in Data Base"""
+
 	queryset = ProductModel.objects.all()
 	permission_classes = (AllowAny,)
 	serializer_class = ProductModelSerializer
 
 class RetrieveProductApiView(generics.RetrieveAPIView):
+
+	""" Retrieve single product by slug"""
+
 	queryset = ProductModel.objects.all()
 	permission_classes = (AllowAny,)
-	serializer_class = ProductModelSerializer
+	serializer_class = OneProductSerializer
 	lookup_field = 'slug'
 
 class SearchProductsApiView(generics.ListAPIView):
+
+	""" Search product by it's symbols in its name"""
+
 	permission_classes = (AllowAny,)
 	serializer_class = ProductModelSerializer
 
@@ -131,25 +130,74 @@ class SearchProductsApiView(generics.ListAPIView):
 
 
 class FilterProductsApiView(generics.ListAPIView):
-    queryset = ProductModel.objects.all()
-    permission_classes = (AllowAny,)
-    serializer_class = ProductModelSerializer
-    filter_backends = (filters.DjangoFilterBackend,)
-    filterset_class = AllWillBeOneFilter
+
+	"""
+	Filter products by specific condtions
+
+	"""
+
+	queryset = ProductModel.objects.all()
+	permission_classes = (AllowAny,)
+	serializer_class = ProductModelSerializer
+	filter_backends = (filters.DjangoFilterBackend,)
+	filterset_class = AllWillBeOneFilter
 
 
-class CartItemApiView(generics.ListCreateAPIView, generics.RetrieveUpdateDestroyAPIView):
-	queryset = CartItemModel.objects.all()
-	serializer_class = CartItemSerializer
-	lookup_field = 'pk'
+class AuthOrderApiView(APIView):
+	
+	pass
 
 
-class CartApiView(generics.ListAPIView):
-	serializer_class = CartSerializer
-	permission_classes = (IsAuthenticated,)
 
-	def get_queryset(self):
-		print(CartModel.objects.filter(customer=self.request.user.customer))
-		return CartModel.objects.filter(customer=self.request.user.customer)
+class OrderApiView(APIView):
+
+	""" Creates order """
+
+	def post(self, request, *args, **kwargs):
+		if request.user.is_authenticated:
+
+			""" TO DO for logged in User"""
+			
+			return Response("I am Authenticated")
+
+		else:
+			
+			serializer = OrderSerializerAnonim(data=request.data)
+			if serializer.is_valid(raise_exception=True):
+				serializer.save()
+				return Response(serializer.data, status=status.HTTP_201_CREATED)
+			return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class GetOrderApi(generics.RetrieveAPIView):
+	queryset = OrderModel.objects.all()
+	serializer_class = OrderSerializerAnonim
+	permission_classes = (AllowAny,)
+	lookup_field = 'id'
+
   
 
+class UpdateComment(generics.RetrieveUpdateAPIView):
+	queryset = CommentModel.objects.all()
+	permission_classes = (IsAuthenticated,)
+	serializer_class = CommentCreateUpdateSerializer
+	lookup_field = 'id'
+
+
+class CreateComment(generics.CreateAPIView):
+	queryset = CommentModel.objects.all()
+	permission_classes = (IsAuthenticated,)
+	serializer_class = CommentCreateUpdateSerializer
+
+
+
+class FavoriteProductUpd(generics.RetrieveUpdateAPIView):
+
+	""" TO DO - create separate Create and Delete"""
+
+	queryset = ProductModel.objects.all()
+	serializer_class = FavouriteProductSerializer
+	permission_classes = (IsAuthenticated,)
+	lookup_field = 'slug'
+
+	
